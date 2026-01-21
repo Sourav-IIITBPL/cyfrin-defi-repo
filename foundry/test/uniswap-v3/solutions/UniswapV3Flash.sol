@@ -2,8 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
-import {IUniswapV3Pool} from
-    "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
+import {
+    IUniswapV3Pool
+} from "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
 
 error NotAuthorized();
 
@@ -28,9 +29,7 @@ contract UniswapV3Flash {
         // Task 1 - ABI encode FlashCallbackData
         bytes memory data = abi.encode(
             FlashCallbackData({
-                amount0: amount0,
-                amount1: amount1,
-                caller: msg.sender
+                amount0: amount0, amount1: amount1, caller: msg.sender
             })
         );
         // Task 2 - Call IUniswapV3Pool.flash

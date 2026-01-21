@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {IUniswapV2Pair} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
+import {
+    IUniswapV2Pair
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
 
 error InvalidToken();

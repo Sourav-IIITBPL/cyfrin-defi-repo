@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >= 0.4 < 0.9;
+pragma solidity >=0.4 <0.9;
 
-import {IUniswapV2Pair} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
+import {
+    IUniswapV2Pair
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
 import {FixedPoint} from "../../../src/uniswap-v2/FixedPoint.sol";
 
 // Modified from https://github.com/Uniswap/v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol

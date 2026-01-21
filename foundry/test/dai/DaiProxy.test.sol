@@ -91,10 +91,7 @@ interface IVat {
     }
 
     function ilks(bytes32 ilk) external view returns (Ilk memory);
-    function urns(bytes32 ilk, address user)
-        external
-        view
-        returns (Urn memory);
+    function urns(bytes32 ilk, address user) external view returns (Urn memory);
 }
 
 interface ICdpManager {

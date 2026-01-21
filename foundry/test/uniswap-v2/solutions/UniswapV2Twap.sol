@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >= 0.4 < 0.9;
+pragma solidity >=0.4 <0.9;
 
-import {IUniswapV2Pair} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
+import {
+    IUniswapV2Pair
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
 import {FixedPoint} from "../../../src/uniswap-v2/FixedPoint.sol";
 
 // Modified from https://github.com/Uniswap/v2-periphery/blob/master/contracts/examples/ExampleOracleSimple.sol
@@ -81,10 +82,12 @@ contract UniswapV2Twap {
                 //    - Use FixedPoint.fraction to calculate spot price.
                 //    - FixedPoint.fraction returns UQ112x112, so cast it into uint256.
                 //    - Multiply spot price by time elapsed
-                price0Cumulative +=
-                    uint256(FixedPoint.fraction(reserve1, reserve0)._x) * dt;
-                price1Cumulative +=
-                    uint256(FixedPoint.fraction(reserve0, reserve1)._x) * dt;
+                price0Cumulative += uint256(
+                    FixedPoint.fraction(reserve1, reserve0)._x
+                ) * dt;
+                price1Cumulative += uint256(
+                    FixedPoint.fraction(reserve0, reserve1)._x
+                ) * dt;
             }
         }
     }

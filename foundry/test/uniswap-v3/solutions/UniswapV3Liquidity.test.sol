@@ -4,8 +4,9 @@ pragma solidity 0.8.24;
 import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
 import {IWETH} from "../../../src/interfaces/IWETH.sol";
-import {INonfungiblePositionManager} from
-    "../../../src/interfaces/uniswap-v3/INonfungiblePositionManager.sol";
+import {
+    INonfungiblePositionManager
+} from "../../../src/interfaces/uniswap-v3/INonfungiblePositionManager.sol";
 import {
     UNISWAP_V3_NONFUNGIBLE_POSITION_MANAGER,
     DAI,
@@ -116,8 +117,12 @@ contract UniswapV3LiquidityTest is Test {
         int24 tickLower = MIN_TICK / TICK_SPACING * TICK_SPACING;
         int24 tickUpper = MAX_TICK / TICK_SPACING * TICK_SPACING;
 
-        (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1) =
-        manager.mint(
+        (
+            uint256 tokenId,
+            uint128 liquidity,
+            uint256 amount0,
+            uint256 amount1
+        ) = manager.mint(
             INonfungiblePositionManager.MintParams({
                 token0: DAI,
                 token1: WETH,
@@ -154,8 +159,7 @@ contract UniswapV3LiquidityTest is Test {
         Position memory p0 = getPosition(tokenId);
 
         // Write your code here
-        (uint256 liquidityDelta, uint256 amount0, uint256 amount1) = manager
-            .increaseLiquidity(
+        (uint256 liquidityDelta, uint256 amount0, uint256 amount1) = manager.increaseLiquidity(
             INonfungiblePositionManager.IncreaseLiquidityParams({
                 tokenId: tokenId,
                 amount0Desired: 500 * 1e18,

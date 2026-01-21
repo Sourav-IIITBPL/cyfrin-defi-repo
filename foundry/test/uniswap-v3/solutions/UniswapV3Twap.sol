@@ -3,8 +3,9 @@ pragma solidity 0.8.24;
 
 import {TickMath} from "../../../src/uniswap-v3/TickMath.sol";
 import {FullMath} from "../../../src/uniswap-v3/FullMath.sol";
-import {IUniswapV3Pool} from
-    "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
+import {
+    IUniswapV3Pool
+} from "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
 
 error InvalidToken();
 

@@ -3,10 +3,12 @@ pragma solidity 0.8.24;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
-import {IUniswapV2Router02} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
-import {IUniswapV2Pair} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
+import {
+    IUniswapV2Router02
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
+import {
+    IUniswapV2Pair
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
 import {
     DAI,
     WETH,

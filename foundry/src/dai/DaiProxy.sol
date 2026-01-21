@@ -19,10 +19,13 @@ contract DaiProxy {
 
     constructor() {
         proxy = IDssProxyRegistry(PROXY_REGISTRY).build();
-        bytes32 res = IDssProxy(proxy).execute(
-            PROXY_ACTIONS,
-            abi.encodeCall(IDssProxyActions.open, (CDP_MANAGER, ETH_C, proxy))
-        );
+        bytes32 res = IDssProxy(proxy)
+            .execute(
+                PROXY_ACTIONS,
+                abi.encodeCall(
+                    IDssProxyActions.open, (CDP_MANAGER, ETH_C, proxy)
+                )
+            );
         cdpId = uint256(res);
     }
 
@@ -38,43 +41,48 @@ contract DaiProxy {
     }
 
     function borrow(uint256 daiAmount) external {
-        IDssProxy(proxy).execute(
-            PROXY_ACTIONS,
-            abi.encodeCall(
-                IDssProxyActions.draw,
-                (CDP_MANAGER, JUG, JOIN_DAI, cdpId, daiAmount)
-            )
-        );
+        IDssProxy(proxy)
+            .execute(
+                PROXY_ACTIONS,
+                abi.encodeCall(
+                    IDssProxyActions.draw,
+                    (CDP_MANAGER, JUG, JOIN_DAI, cdpId, daiAmount)
+                )
+            );
     }
 
     function repay(uint256 daiAmount) external {
         dai.approve(proxy, daiAmount);
-        IDssProxy(proxy).execute(
-            PROXY_ACTIONS,
-            abi.encodeCall(
-                IDssProxyActions.wipe, (CDP_MANAGER, JOIN_DAI, cdpId, daiAmount)
-            )
-        );
+        IDssProxy(proxy)
+            .execute(
+                PROXY_ACTIONS,
+                abi.encodeCall(
+                    IDssProxyActions.wipe,
+                    (CDP_MANAGER, JOIN_DAI, cdpId, daiAmount)
+                )
+            );
     }
 
     function repayAll() external {
         dai.approve(proxy, type(uint256).max);
-        IDssProxy(proxy).execute(
-            PROXY_ACTIONS,
-            abi.encodeCall(
-                IDssProxyActions.wipeAll, (CDP_MANAGER, JOIN_DAI, cdpId)
-            )
-        );
+        IDssProxy(proxy)
+            .execute(
+                PROXY_ACTIONS,
+                abi.encodeCall(
+                    IDssProxyActions.wipeAll, (CDP_MANAGER, JOIN_DAI, cdpId)
+                )
+            );
     }
 
     function unlockEth(uint256 ethAmount) external {
-        IDssProxy(proxy).execute(
-            PROXY_ACTIONS,
-            abi.encodeCall(
-                IDssProxyActions.freeETH,
-                (CDP_MANAGER, JOIN_ETH_C, cdpId, ethAmount)
-            )
-        );
+        IDssProxy(proxy)
+            .execute(
+                PROXY_ACTIONS,
+                abi.encodeCall(
+                    IDssProxyActions.freeETH,
+                    (CDP_MANAGER, JOIN_ETH_C, cdpId, ethAmount)
+                )
+            );
     }
 }
 

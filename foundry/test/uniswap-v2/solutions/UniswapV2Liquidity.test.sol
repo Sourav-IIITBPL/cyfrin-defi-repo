@@ -4,10 +4,12 @@ pragma solidity 0.8.24;
 import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
 import {IWETH} from "../../../src/interfaces/IWETH.sol";
-import {IUniswapV2Router02} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
-import {IUniswapV2Pair} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
+import {
+    IUniswapV2Router02
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
+import {
+    IUniswapV2Pair
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
 import {
     DAI,
     WETH,
@@ -46,8 +48,7 @@ contract UniswapV2LiquidityTest is Test {
         // Write your code here
         // Don’t change any other code
         vm.prank(user);
-        (uint256 amountA, uint256 amountB, uint256 liquidity) = router
-            .addLiquidity({
+        (uint256 amountA, uint256 amountB, uint256 liquidity) = router.addLiquidity({
             tokenA: DAI,
             tokenB: WETH,
             amountADesired: 1000000 * 1e18,

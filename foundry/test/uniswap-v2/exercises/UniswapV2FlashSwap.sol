@@ -1,68 +1,116 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {IUniswapV2Pair} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
+import {
+    IUniswapV2Pair
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
+import {IWETH} from "../../../src/interfaces/IWETH.sol";
+import {
+    IUniswapV2Factory
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Factory.sol";
+import {
+    IUniswapV2Router02
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
+import {
+    DAI,
+    WETH,
+    UNISWAP_V2_FACTORY,
+    UNISWAP_V2_ROUTER_02
+} from "../../../src/Constants.sol";
 
 error InvalidToken();
 
-contract UniswapV2FlashSwap {
-    IUniswapV2Pair private immutable pair;
-    address private immutable token0;
-    address private immutable token1;
+contract UniswapV2Flashloan {
+    address private constant UNISWAP_V2_FACTORY =
+        0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
+    address private constant UNISWAP_V2_ROUTER02 =
+        0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    address private constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
-    constructor(address _pair) {
-        pair = IUniswapV2Pair(_pair);
-        token0 = pair.token0();
-        token1 = pair.token1();
+    IUniswapV2Factory public factory;
+    IUniswapV2Router02 public router;
+    IUniswapV2Pair public pair;
+    IERC20 public token0;
+    IERC20 public token1;
+    IWETH public weth;
+    address public owner;
+
+    constructor() {
+        owner = msg.sender;
     }
 
-    function flashSwap(address token, uint256 amount) external {
-        if (token != token0 && token != token1) {
-            revert InvalidToken();
-        }
+    function flashSwap(
+        address factoryA,
+        address routerA,
+        address tokenA,
+        address tokenB,
+        uint256 amountA,
+        uint256 amountB
+    ) public returns (address, address, address, address) {
+        require(
+            factoryA != address(0) && routerA != address(0), "Invalid address"
+        );
+        factory = IUniswapV2Factory(factoryA);
+        router = IUniswapV2Router02(routerA);
+        token0 = IERC20(tokenA);
+        token1 = IERC20(tokenB);
+        weth = IWETH(WETH);
 
-        // Write your code here
-        // Don’t change any other code
+        // swapping logic
 
-        // 1. Determine amount0Out and amount1Out
-        (uint256 amount0Out, uint256 amount1Out) = (0, 0);
+        pair = IUniswapV2Pair(factory.getPair(tokenA, tokenB));
+        require(address(pair) != address(0), "Pool does not exist");
 
-        // 2. Encode token and msg.sender as bytes
-        bytes memory data;
-
-        // 3. Call pair.swap
+        bytes memory data = abi.encode(amountA, amountB, msg.sender);
+        pair.swap(amountA, amountB, address(this), data);
+        return
+            (
+                address(factory),
+                address(router),
+                address(tokenA),
+                address(tokenB)
+            );
     }
 
-    // Uniswap V2 callback
     function uniswapV2Call(
         address sender,
         uint256 amount0,
         uint256 amount1,
         bytes calldata data
     ) external {
-        // Write your code here
-        // Don’t change any other code
-
         // 1. Require msg.sender is pair contract
         // 2. Require sender is this contract
         // Alice -> FlashSwap ---- to = FlashSwap ----> UniswapV2Pair
         //                    <-- sender = FlashSwap --
         // Eve ------------ to = FlashSwap -----------> UniswapV2Pair
         //          FlashSwap <-- sender = Eve --------
+        require(msg.sender == address(pair), "Unauthorized");
+        require(sender == address(this), "Not from contract");
 
         // 3. Decode token and caller from data
-        (address token, address caller) = (address(0), address(0));
-        // 4. Determine amount borrowed (only one of them is > 0)
-        uint256 amount = 0;
+        (uint256 amountA, uint256 amountB, address initiator) =
+            abi.decode(data, (uint256, uint256, address));
 
-        // 5. Calculate flash swap fee and amount to repay
+        // Implement your custom logic here
+        // For example, arbitrage, liquidation, etc.
+
+        // 4. Calculate flash swap fee and amount to repay
         // fee = borrowed amount * 3 / 997 + 1 to round up
-        uint256 fee = 0;
-        uint256 amountToRepay = 0;
+        uint256 feeA = ((amount0 * 3) / 997) + 1; // extra one for rounding errors.
+        uint256 feeB = ((amount1 * 3) / 997) + 1;
 
-        // 6. Get flash swap fee from caller
-        // 7. Repay Uniswap V2 pair
+        // 5. Get flash swap fee from caller
+        token0.transferFrom(initiator, address(this), feeA);
+        token1.transferFrom(initiator, address(this), feeB);
+
+        // 6. Repay Uniswap V2 pair
+        if (amount0 > 0) {
+            token0.transfer(address(pair), amount0 + feeA);
+        }
+        if (amount1 > 0) {
+            token1.transfer(address(pair), amount1 + feeB);
+        }
     }
 }
+

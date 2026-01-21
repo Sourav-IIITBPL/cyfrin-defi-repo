@@ -1,8 +1,9 @@
 pragma solidity 0.8.24;
 
 import {Test, console2} from "forge-std/Test.sol";
-import {IUniswapV3Pool} from
-    "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
+import {
+    IUniswapV3Pool
+} from "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
 import {UNISWAP_V3_POOL_USDC_WETH_500} from "../../../src/Constants.sol";
 import {FullMath} from "../../../src/uniswap-v3/FullMath.sol";
 
@@ -22,13 +23,20 @@ contract UniswapV3SwapTest is Test {
         uint256 price = 0;
         IUniswapV3Pool.Slot0 memory slot0 = pool.slot0();
 
-        // Write your code here
-        // Don’t change any other code
+        uint256 sqrtPrice = slot0.sqrtPriceX96;
 
         // sqrtPriceX96 * sqrtPriceX96 might overflow
         // So use FullMath.mulDiv to do uint256 * uint256 / uint256 without overflow
 
+        uint256 priceQ96 = FullMath.mulDiv(sqrtPrice, sqrtPrice, Q96);
+
+        price = priceQ96 / Q96;
+
+        uint256 rprice = 1e18 / price;
+
+        price = FullMath.mulDiv(rprice, WETH_DECIMALS, USDC_DECIMALS);
+
         assertGt(price, 0, "price = 0");
-        console2.log("price %e", price);
+        console2.log("price", price);
     }
 }

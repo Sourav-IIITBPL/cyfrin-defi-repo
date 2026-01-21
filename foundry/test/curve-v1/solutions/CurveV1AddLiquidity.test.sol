@@ -2,8 +2,9 @@
 pragma solidity 0.8.24;
 
 import {Test, console2} from "forge-std/Test.sol";
-import {IStableSwap3Pool} from
-    "../../../src/interfaces/curve/IStableSwap3Pool.sol";
+import {
+    IStableSwap3Pool
+} from "../../../src/interfaces/curve/IStableSwap3Pool.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
 import {
     DAI,

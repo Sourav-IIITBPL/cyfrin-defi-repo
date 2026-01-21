@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {IUniswapV2Pair} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
+import {
+    IUniswapV2Pair
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
 
 error InsufficientProfit();
@@ -63,12 +64,13 @@ contract UniswapV2Arb2 {
             })
         );
 
-        IUniswapV2Pair(pair0).swap({
-            amount0Out: isZeroForOne ? 0 : amountOut,
-            amount1Out: isZeroForOne ? amountOut : 0,
-            to: address(this),
-            data: data
-        });
+        IUniswapV2Pair(pair0)
+            .swap({
+                amount0Out: isZeroForOne ? 0 : amountOut,
+                amount1Out: isZeroForOne ? amountOut : 0,
+                to: address(this),
+                data: data
+            });
     }
 
     function uniswapV2Call(
@@ -99,12 +101,13 @@ contract UniswapV2Arb2 {
 
         IERC20(tokenOut).transfer(params.pair1, params.amountOut);
 
-        IUniswapV2Pair(params.pair1).swap({
-            amount0Out: params.isZeroForOne ? amountOut : 0,
-            amount1Out: params.isZeroForOne ? 0 : amountOut,
-            to: address(this),
-            data: ""
-        });
+        IUniswapV2Pair(params.pair1)
+            .swap({
+                amount0Out: params.isZeroForOne ? amountOut : 0,
+                amount1Out: params.isZeroForOne ? 0 : amountOut,
+                to: address(this),
+                data: ""
+            });
 
         // NOTE - no need to calculate flash swap fee
         IERC20(tokenIn).transfer(params.pair0, params.amountIn);

@@ -2,8 +2,9 @@
 pragma solidity ^0.8.24;
 
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
-import {IUniswapV3Pool} from
-    "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
+import {
+    IUniswapV3Pool
+} from "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
 
 contract UniswapV3Flash {
     struct FlashCallbackData {

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {IUniswapV2Pair} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
-import {IUniswapV2Router02} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
+import {
+    IUniswapV2Pair
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Pair.sol";
+import {
+    IUniswapV2Router02
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
 
 error InsufficientProfit();
@@ -38,12 +40,12 @@ contract UniswapV2Arb1 {
 
         uint256[] memory amounts = IUniswapV2Router02(params.router0)
             .swapExactTokensForTokens({
-            amountIn: params.amountIn,
-            amountOutMin: 0,
-            path: path,
-            to: address(this),
-            deadline: block.timestamp
-        });
+                amountIn: params.amountIn,
+                amountOutMin: 0,
+                path: path,
+                to: address(this),
+                deadline: block.timestamp
+            });
 
         // Swap on router 1
         IERC20(params.tokenOut).approve(address(params.router1), amounts[1]);
@@ -51,13 +53,14 @@ contract UniswapV2Arb1 {
         path[0] = params.tokenOut;
         path[1] = params.tokenIn;
 
-        amounts = IUniswapV2Router02(params.router1).swapExactTokensForTokens({
-            amountIn: amounts[1],
-            amountOutMin: params.amountIn,
-            path: path,
-            to: address(this),
-            deadline: block.timestamp
-        });
+        amounts = IUniswapV2Router02(params.router1)
+            .swapExactTokensForTokens({
+                amountIn: amounts[1],
+                amountOutMin: params.amountIn,
+                path: path,
+                to: address(this),
+                deadline: block.timestamp
+            });
 
         amountOut = amounts[1];
     }
@@ -69,9 +72,8 @@ contract UniswapV2Arb1 {
     function swap(SwapParams calldata params) external {
         // Write your code here
         // Don’t change any other code
-        IERC20(params.tokenIn).transferFrom(
-            msg.sender, address(this), params.amountIn
-        );
+        IERC20(params.tokenIn)
+            .transferFrom(msg.sender, address(this), params.amountIn);
         uint256 amountOut = _swap(params);
         if (amountOut - params.amountIn < params.minProfit) {
             revert InsufficientProfit();
@@ -95,12 +97,13 @@ contract UniswapV2Arb1 {
         // Don’t change any other code
         bytes memory data = abi.encode(msg.sender, pair, params);
 
-        IUniswapV2Pair(pair).swap({
-            amount0Out: isToken0 ? params.amountIn : 0,
-            amount1Out: isToken0 ? 0 : params.amountIn,
-            to: address(this),
-            data: data
-        });
+        IUniswapV2Pair(pair)
+            .swap({
+                amount0Out: isToken0 ? params.amountIn : 0,
+                amount1Out: isToken0 ? 0 : params.amountIn,
+                to: address(this),
+                data: data
+            });
     }
 
     function uniswapV2Call(

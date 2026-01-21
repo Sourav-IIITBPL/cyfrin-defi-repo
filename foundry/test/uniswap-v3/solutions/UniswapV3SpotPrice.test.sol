@@ -1,8 +1,9 @@
 pragma solidity 0.8.24;
 
 import {Test, console2} from "forge-std/Test.sol";
-import {IUniswapV3Pool} from
-    "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
+import {
+    IUniswapV3Pool
+} from "../../../src/interfaces/uniswap-v3/IUniswapV3Pool.sol";
 import {UNISWAP_V3_POOL_USDC_WETH_500} from "../../../src/Constants.sol";
 import {FullMath} from "../../../src/uniswap-v3/FullMath.sol";
 

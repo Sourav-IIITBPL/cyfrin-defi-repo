@@ -26,10 +26,7 @@ contract CurveV2RemoveLiquidityTest is Test {
 
         uint256[3] memory amounts = [uint256(1e3 * 1e6), uint256(0), uint256(0)];
         pool.add_liquidity({
-            amounts: amounts,
-            min_lp: 1,
-            use_eth: false,
-            receiver: address(this)
+            amounts: amounts, min_lp: 1, use_eth: false, receiver: address(this)
         });
     }
 

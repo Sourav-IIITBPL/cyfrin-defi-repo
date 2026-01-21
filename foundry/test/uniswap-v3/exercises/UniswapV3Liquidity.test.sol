@@ -4,8 +4,9 @@ pragma solidity 0.8.24;
 import {Test, console2} from "forge-std/Test.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
 import {IWETH} from "../../../src/interfaces/IWETH.sol";
-import {INonfungiblePositionManager} from
-    "../../../src/interfaces/uniswap-v3/INonfungiblePositionManager.sol";
+import {
+    INonfungiblePositionManager
+} from "../../../src/interfaces/uniswap-v3/INonfungiblePositionManager.sol";
 import {
     UNISWAP_V3_NONFUNGIBLE_POSITION_MANAGER,
     DAI,

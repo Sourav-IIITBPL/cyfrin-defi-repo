@@ -1,101 +1,146 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {Test, console2} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {IERC20} from "../../../src/interfaces/IERC20.sol";
 import {IWETH} from "../../../src/interfaces/IWETH.sol";
-import {IUniswapV2Router02} from
-    "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
+import {
+    IUniswapV2Router02
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Router02.sol";
+import {
+    IUniswapV2Factory
+} from "../../../src/interfaces/uniswap-v2/IUniswapV2Factory.sol";
 import {
     DAI,
     WETH,
+    MKR,
+    HOPR,
+    UNISWAP_V2_FACTORY,
     UNISWAP_V2_ROUTER_02,
     SUSHISWAP_V2_ROUTER_02,
     UNISWAP_V2_PAIR_DAI_WETH,
     UNISWAP_V2_PAIR_DAI_MKR
 } from "../../../src/Constants.sol";
-import {UniswapV2Arb1} from "./UniswapV2Arb1.sol";
+
+import {UniswapV2Arbitrage1} from "./UniswapV2Arb1.sol";
 
 // Test arbitrage between Uniswap and Sushiswap
 // Buy WETH on Uniswap, sell on Sushiswap.
-// For flashSwap, borrow DAI from DAI/MKR pair
-contract UniswapV2Arb1Test is Test {
-    IUniswapV2Router02 private constant uni_router =
-        IUniswapV2Router02(UNISWAP_V2_ROUTER_02);
-    IUniswapV2Router02 private constant sushi_router =
-        IUniswapV2Router02(SUSHISWAP_V2_ROUTER_02);
-    IERC20 private constant dai = IERC20(DAI);
-    IWETH private constant weth = IWETH(WETH);
-    address constant user = address(11);
+// For flashSwap, borrow DAI from DAI/hopr pair
 
-    UniswapV2Arb1 private arb;
+// currently on dai/weth pool in uniswap spot price is 3250 dai/weth  and on sushiswap its 3312 dai/weth .
+contract Arbitrage1 is Test {
+    IWETH private weth;
+    IERC20 private dai;
+    IERC20 private mkr;
+    IERC20 private hopr;
+    IUniswapV2Router02 private uni_router;
+    IUniswapV2Router02 private sushi_router;
+
+    UniswapV2Arbitrage1 Arbitrage1;
 
     function setUp() public {
-        arb = new UniswapV2Arb1();
+        weth = IWETH(WETH);
+        dai = IERC20(DAI);
+        mkr = IERC20(MKR);
+        hopr = IERC20(HOPR);
+        uni_router = IUniswapV2Router02(UNISWAP_V2_ROUTER_02);
+        sushi_router = IUniswapV2Router02(SUSHISWAP_V2_ROUTER_02);
 
-        // Setup - WETH cheaper on Uniswap than Sushiswap
-        deal(address(this), 100 * 1e18);
+        Arbitrage1 = new UniswapV2Arbitrage1();
+    }
 
-        weth.deposit{value: 100 * 1e18}();
-        weth.approve(address(uni_router), type(uint256).max);
-
+    // user will borrow around 1 weth from 3250 dai and then sell 1 weth into sushiswap.
+    function testSwap() public {
+        address user = makeAddr("user");
+        vm.deal(user, 100 ether);
+        deal(address(dai), user, 10_000 * 10 ** 18);
+        vm.prank(user);
+        weth.deposit{value: 100 ether}();
+        // preview
         address[] memory path = new address[](2);
-        path[0] = WETH;
-        path[1] = DAI;
+        path[0] = address(dai);
+        path[1] = address(weth);
+        uint256 amountOut = 1e18;
+        uint256[] memory amountsIn = uni_router.getAmountsIn(amountOut, path);
+        console.log("preview: Amount of dai needed", amountsIn[0]);
+        console.log("preview: Amount of weth out", amountsIn[1]);
 
-        uni_router.swapExactTokensForTokens({
-            amountIn: 100 * 1e18,
-            amountOutMin: 1,
-            path: path,
-            to: user,
-            deadline: block.timestamp
-        });
-
-        // Setup - user has DAI, approves arb to spend DAI
-        deal(DAI, user, 10000 * 1e18);
-        vm.prank(user);
-        dai.approve(address(arb), type(uint256).max);
-    }
-
-    function test_swap() public {
-        uint256 bal0 = dai.balanceOf(user);
-        vm.prank(user);
-        arb.swap(
-            UniswapV2Arb1.SwapParams({
-                router0: UNISWAP_V2_ROUTER_02,
-                router1: SUSHISWAP_V2_ROUTER_02,
-                tokenIn: DAI,
-                tokenOut: WETH,
-                amountIn: 10 * 1e18,
-                minProfit: 1
+        uint256 daiAmount = amountsIn[0];
+        uint256 daibalance0 = dai.balanceOf(user);
+        vm.startPrank(user);
+        dai.approve(address(Arbitrage1), daiAmount);
+        Arbitrage1.swap(
+            UniswapV2Arbitrage1.SwapParams({
+                router0: address(uni_router),
+                router1: address(sushi_router),
+                token0: address(dai),
+                token1: address(weth),
+                amountIn: daiAmount,
+                amountOutMin: 1,
+                minProfit: 1,
+                isToken0: true
             })
         );
-        uint256 bal1 = dai.balanceOf(user);
+        vm.stopPrank();
 
-        assertGe(bal1, bal0, "no profit");
-        assertEq(dai.balanceOf(address(arb)), 0, "DAI balance of arb != 0");
-        console2.log("profit", bal1 - bal0);
+        uint256 daibalance1 = dai.balanceOf(user);
+
+        assertGt(daibalance1, daibalance0, "no profit");
+        assertEq(
+            dai.balanceOf(address(Arbitrage1)),
+            0,
+            "DAI balance of Arbitrage1 != 0"
+        );
+
+        console.log(
+            "balance of dai tokens of user accountbefore swap", daibalance0
+        );
+        console.log(
+            "balance of dai tokens of user account after swap", daibalance1
+        );
+        console.log("Swap profit of dai tokens", daibalance1 - daibalance0);
     }
 
-    function test_flashSwap() public {
-        uint256 bal0 = dai.balanceOf(user);
-        vm.prank(user);
-        arb.flashSwap(
-            UNISWAP_V2_PAIR_DAI_MKR,
-            true,
-            UniswapV2Arb1.SwapParams({
-                router0: UNISWAP_V2_ROUTER_02,
-                router1: SUSHISWAP_V2_ROUTER_02,
-                tokenIn: DAI,
-                tokenOut: WETH,
-                amountIn: 10 * 1e18,
-                minProfit: 1
+    function testFlashSwap() public {
+        address user = makeAddr("user");
+        uint256 daibalance0 = dai.balanceOf(user);
+        vm.startPrank(user);
+        uint256 daiAmount = 10_000 * 10 ** 18;
+        address pair = IUniswapV2Factory(UNISWAP_V2_FACTORY)
+            .getPair(address(dai), address(hopr));
+        Arbitrage1.flashSwap(
+            pair,
+            address(dai) < address(hopr) ? true : false,
+            UniswapV2Arbitrage1.SwapParams({
+                router0: address(sushi_router),
+                router1: address(uni_router),
+                token0: address(dai),
+                token1: address(weth),
+                amountIn: daiAmount,
+                amountOutMin: 1,
+                minProfit: 1,
+                isToken0: true
             })
         );
-        uint256 bal1 = dai.balanceOf(user);
+        vm.stopPrank();
 
-        assertGe(bal1, bal0, "no profit");
-        assertEq(dai.balanceOf(address(arb)), 0, "DAI balance of arb != 0");
-        console2.log("profit", bal1 - bal0);
+        uint256 daibalance1 = dai.balanceOf(user);
+
+        assertGt(daibalance1, daibalance0, "no profit");
+        assertEq(
+            dai.balanceOf(address(Arbitrage1)),
+            0,
+            "DAI balance of Arbitrage1 != 0"
+        );
+        console.log("dai/weth uniswap pair", pair);
+        console.log(
+            "balance of dai tokens of user accountbefore swap", daibalance0
+        );
+        console.log(
+            "balance of dai tokens of user account after swap", daibalance1
+        );
+        console.log("Swap profit of dai tokens", daibalance1 - daibalance0);
     }
 }
+
