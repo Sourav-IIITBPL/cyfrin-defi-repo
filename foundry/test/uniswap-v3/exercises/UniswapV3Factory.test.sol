@@ -29,21 +29,19 @@ contract UniswapV3FactoryTest is Test {
         tokenB = new ERC20("B", "B", 18);
     }
 
-    // Exercise 1 - Get the address of DAI/USDC (0.1% fee) pool
+    // Exercise 1 - Get the address of DAI/USDC (0.01% fee) pool
     function test_getPool() public {
-        // Write your code here
-        address pool;
+        address pool = factory.getPool(address(DAI), address(USDC), 100);
         assertEq(pool, UNISWAP_V3_POOL_DAI_USDC_100);
     }
 
     // Exercise 2 - Deploy a new pool with tokenA and tokenB, 0.1% fee
     function test_createPool() public {
-        // Write your code here
-        address pool;
-
         (address token0, address token1) = address(tokenA) <= address(tokenB)
             ? (address(tokenA), address(tokenB))
             : (address(tokenB), address(tokenA));
+
+        address pool = factory.createPool(token0, token1, 100);
 
         assertEq(IUniswapV3Pool(pool).token0(), token0);
         assertEq(IUniswapV3Pool(pool).token1(), token1);
